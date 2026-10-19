@@ -11,7 +11,7 @@ function escapeHtml(str) {
   }
 
 // --- 1. STATE: the single source of truth ---
-const books = [
+let books = [
     {
         id: "1",
         title: "The Hobbit",
@@ -42,6 +42,25 @@ const books = [
     }
 ];
 
+const STORAGE_KEY = "my-library-books";
+
+function saveBooks() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+}
+
+function loadBooks() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null; // corrupted data - ignore it
+    }
+}
+
+// load saved books on startup - replaces the starters if any saved data exists
+const saved = loadBooks();
+if (saved) books = saved;
 
 let searchTerm = "";
 let statusFilter = "all";
@@ -116,6 +135,7 @@ formEl.addEventListener("submit", (event) => {
         status,
         cover,
     });
+    saveBooks();
 
     // Re-render and reset the form
     render();
@@ -145,6 +165,8 @@ function deleteBook(id) {
     // Remove from state by filtering OUT the matching id
     const index = books.findIndex((b) => b.id === id);
     if (index !== -1) books.splice(index, 1);
+    
+    saveBooks();
 
     render();
 }
@@ -162,6 +184,8 @@ function editBook(id) {
     book.title = newTitle.trim() || book.title;
     book.author = newAuthor.trim() || book.author;
 
+    saveBooks();
+
     render();
 }
 
@@ -177,4 +201,4 @@ searchEl.addEventListener("input", (event) => {
 filterEl.addEventListener("change", (event) => {
     statusFilter = event.target.value;
     render();
-})
+});
