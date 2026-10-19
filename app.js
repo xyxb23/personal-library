@@ -51,6 +51,10 @@ function render() {
                     <p class="author">${book.author}</p>
                     <span class="badge badge--${book.status}">${book.status}</span>
                 </div>
+                <div class="book-actions">
+                    <button class="btn-edit" data-action="edit">Edit</button>
+                    <button class="btn-delete" data-action="delete">Delete</button>
+                </div>
             </article>
             `
         )
@@ -93,3 +97,45 @@ formEl.addEventListener("submit", (event) => {
     formEl.reset();
     document.querySelector("#title").focus(); // nice UX: ready for next entry
 });
+
+// --- 6. EVENT DELEGATION: handle clicks on edit/delete buttons ---
+bookListEl.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-action]");
+    if (!button) return; // click wasn't on an action button - ignore
+
+    const card = button.closest(".book-card");
+    const id = card.dataset.id;
+    const action = button.dataset.action;
+
+    if (action === "delete") {
+        deleteBook(id);
+    } else if (action === "edit") {
+        editBook(id);
+    }
+});
+
+function deleteBook(id) {
+    if (!confirm("Delete this book?")) return;
+
+    // Remove from state by filtering OUT the matching id
+    const index = books.findIndex((b) => b.id === id);
+    if (index !== -1) books.splice(index, 1);
+
+    render();
+}
+
+function editBook(id) {
+    const book = books.find((b) => b.id === id);
+    if (!book) return;
+
+    // For now: simple prompt-based edit. We'll upgrade to a proper form later.
+    const newTitle = prompt("New title:", book.title);
+    if (newTitle === null) return; // user cancelled
+    const newAuthor = prompt("New author:", book.author);
+    if (newAuthor === null) return;
+
+    book.title = newTitle.trim() || book.title;
+    book.author = newAuthor.trim() || book.author;
+
+    render();
+}

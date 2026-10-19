@@ -79,6 +79,7 @@ body {
 
 /* --- book card --- */
 .book-card {
+    position: relative;
     background: #fff;
     border-radius: 10px;
     padding: 0.75rem;
@@ -86,6 +87,26 @@ body {
     gap: 0.75rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
+.book-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.book-card:hover .book-actions { opacity: 1; }
+.book-actions button {
+    border: 0;
+    background: #f3f4f6;
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+.book-actions button:hover { background: #e5e7eb; }
+.btn-delete:hover { background: #fee2e2 !important; color: #991b1b; }
 .book-cover {
     width: 48px;
     height: 68px;
