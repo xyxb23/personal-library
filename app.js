@@ -1,6 +1,15 @@
 // Milestone 1: no logic yet - just prove the file is connected.
 console.log("app.js loaded")
 
+function escapeHtml(str) {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
 // --- 1. STATE: the single source of truth ---
 const books = [
     {
@@ -63,8 +72,8 @@ function render() {
                 ${book.cover ? `<img src="${book.cover}" alt="${book.title}" />` : "📕"}
                 </div>
                 <div class="book-info">
-                    <h3>${book.title}</h3>
-                    <p class="author">${book.author}</p>
+                    <h3>${escapeHtml(book.title)}</h3>
+                    <p class="author">${escapeHtml(book.author)}</p>
                     <span class="badge badge--${book.status}">${book.status}</span>
                 </div>
                 <div class="book-actions">
