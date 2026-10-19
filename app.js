@@ -59,3 +59,37 @@ function render() {
 
 // --- 4. Go ---
 render();
+
+// --- Grab the form once ===
+const formEl = document.querySelector("#book-form");
+
+// --- 5. EVENT: add a book ---
+formEl.addEventListener("submit", (event) => {
+    event.preventDefault(); // stop the browser from reloading the page
+
+    // Read values from the form inputs
+    const title = document.querySelector("#title").value.trim();
+    const author = document.querySelector("#author").value.trim();
+    const status = document.querySelector("#status").value;
+    const cover = document.querySelector("#cover").value.trim();
+
+    // Guard: don't add empty books
+    if (!title || !author) {
+        alert("Title and author are required.");
+        return;
+    }
+
+    // Build a new book object and push it to state
+    books.push({
+        id: crypto.randomUUID(), // unique id - supported in modern browsers
+        title,
+        author,
+        status,
+        cover,
+    });
+
+    // Re-render and reset the form
+    render();
+    formEl.reset();
+    document.querySelector("#title").focus(); // nice UX: ready for next entry
+});
