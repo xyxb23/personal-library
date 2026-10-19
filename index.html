@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Library</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="site-header">
+        <h1>📚 My Library</h1>
+    </header>
+
+    <main class="layout">
+        <!-- SIDEBAR: add-book form -->
+        <aside class="sidebar">
+            <h2>Add a book</h2>
+            <form id="book-form">
+                <label for="title">Title</label>
+                <input id="title" name="title" type="text" required />
+
+                <label for="author">Author</label>
+                <input id="author" name="author" type="text" required />
+
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="owned">Owned</option>
+                    <option value="reading">Reading</option>
+                    <option value="read">Read</option>
+                    <option value="wishlist">Wishlist</option>
+                </select>
+
+                <label for="cover">Cover URL (optional)</label>
+                <input id="cover" name="cover" type="url" placeholder="https://..." />
+
+                <button type="submit">Add book</button>
+            </form>
+        </aside>
+
+        <!-- MAIN: controls + book list -->
+        <section class="content">
+            <div class="controls">
+                <input id="search" type="search" placeholder="Search title or author..." />
+                <select id="filter">
+                    <option value="all">All</option>
+                    <option value="owned">Owned</option>
+                    <option value="reading">Reading</option>
+                    <option value="read">Read</option>
+                    <option value="wishlist">Wishlist</option>
+                </select>
+            </div>
+
+            <div id="book-list" class="book-list">
+                <!-- books will be rendered here by JS -->
+                <p class="empty">No books yet. Add one on the left!</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

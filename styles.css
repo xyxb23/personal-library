@@ -1,0 +1,83 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f7f7f9;
+  color: #222;
+}
+
+.site-header {
+  padding: 1rem 1.5rem;
+  background: #1f2937;
+  color: #fff;
+}
+.site-header h1 { margin: 0; font-size: 1.4rem; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;  /* sidebar | content */
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* --- sidebar / form --- */
+.sidebar {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+  height: fit-content;
+}
+.sidebar h2 { margin-top: 0; font-size: 1.1rem; }
+
+#book-form { display: flex; flex-direction: column; gap: 0.35rem; }
+#book-form label { font-size: 0.8rem; font-weight: 600; color: #555; }
+#book-form input,
+#book-form select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+#book-form button {
+  margin-top: 0.75rem;
+  padding: 0.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+#book-form button:hover { background: #1d4ed8; }
+
+/* --- controls --- */
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.controls input { flex: 1; }
+.controls input,
+.controls select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+
+/* --- book list --- */
+.book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.empty { color: #888; }
+
+/* --- responsive: stack on small screens --- */
+@media (max-width: 700px) {
+  .layout { grid-template-columns: 1fr; }
+}
