@@ -33,13 +33,29 @@ const books = [
     }
 ];
 
+
+let searchTerm = "";
+let statusFilter = "all";
+
 // --- 2. Grab DOM elements once ---
 const bookListEl = document.querySelector("#book-list");
 
 // --- 3. RENDER: draw the screen from state ---
 function render() {
-    // Build on HTML string from the array, then set it all at once
-    bookListEl.innerHTML = books
+    const filtered = books.filter((book) => {
+        const matchesSearch = 
+            book.title.toLowerCase().includes(searchTerm) ||
+            book.author.toLowerCase().includes(searchTerm);
+        const matchesStatus = 
+            statusFilter === "all" || book.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    if (filtered.length === 0) {
+        bookListEl.innerHTML = `<p class="empty">No matching books.</p>`;
+        return;
+    }
+    bookListEl.innerHTML = filtered
         .map(
             (book) => `
             <article class="book-card" data-id="${book.id}">
@@ -139,3 +155,17 @@ function editBook(id) {
 
     render();
 }
+
+// --- 7. Search + filter listeners ---
+const searchEl = document.querySelector("#search");
+const filterEl = document.querySelector("#filter");
+
+searchEl.addEventListener("input", (event) => {
+    searchTerm = event.target.value.trim().toLowerCase();
+    render();
+});
+
+filterEl.addEventListener("change", (event) => {
+    statusFilter = event.target.value;
+    render();
+})
