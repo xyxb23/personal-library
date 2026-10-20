@@ -88,12 +88,12 @@ function render() {
             (book) => `
             <article class="book-card" data-id="${book.id}">
                 <div class="book-cover">
-                ${book.cover ? `<img src="${book.cover}" alt="${book.title}" />` : "📕"}
+                ${book.cover ? `<img src="${escapeHtml(book.cover)}" alt="${escapeHtml(book.title)}" />` : "📕"}
                 </div>
                 <div class="book-info">
                     <h3>${escapeHtml(book.title)}</h3>
                     <p class="author">${escapeHtml(book.author)}</p>
-                    <span class="badge badge--${book.status}">${book.status}</span>
+                    <span class="badge badge--${escapeHtml(book.status)}">${escapeHtml(book.status)}</span>
                 </div>
                 <div class="book-actions">
                     <button class="btn-edit" data-action="edit">Edit</button>
