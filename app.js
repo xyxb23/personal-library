@@ -177,8 +177,10 @@ function editBook(id) {
 
     // For now: simple prompt-based edit. We'll upgrade to a proper form later.
     const newTitle = prompt("New title:", book.title);
+    if (!newTitle.trim()) return;
     if (newTitle === null) return; // user cancelled
     const newAuthor = prompt("New author:", book.author);
+    if (!newAuthor.trim()) return;
     if (newAuthor === null) return;
 
     book.title = newTitle.trim() || book.title;
