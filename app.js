@@ -1,6 +1,3 @@
-// Milestone 1: no logic yet - just prove the file is connected.
-console.log("app.js loaded")
-
 function escapeHtml(str) {
     return String(str)
       .replaceAll("&", "&amp;")
@@ -45,22 +42,30 @@ let books = [
 const STORAGE_KEY = "my-library-books";
 
 function saveBooks() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+        return true;
+    } catch (err) {
+        console.warn("Could not save books:", err);
+        return false;
+    }    
 }
 
 function loadBooks() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
     try {
-        return JSON.parse(raw);
-    } catch {
-        return null; // corrupted data - ignore it
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : null;
+    } catch (err) {
+        console.warn("Could not load books:", err);
+        return null;
     }
 }
 
 // load saved books on startup - replaces the starters if any saved data exists
 const saved = loadBooks();
-if (saved) books = saved;
+if (Array.isArray(saved)) books = saved;
 
 let searchTerm = "";
 let statusFilter = "all";
@@ -135,12 +140,18 @@ formEl.addEventListener("submit", (event) => {
         status,
         cover,
     });
-    saveBooks();
+    const saved = saveBooks();
 
     // Re-render and reset the form
     render();
     formEl.reset();
     document.querySelector("#title").focus(); // nice UX: ready for next entry
+
+    if (!saved) {
+        // A one-line, dismissible banner - better than silence
+        // showToast("⚠️ Couldn't save - this book won't persist after refresh.");
+        alert("Couldn't save");
+    }
 });
 
 // --- 6. EVENT DELEGATION: handle clicks on edit/delete buttons ---
