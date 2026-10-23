@@ -126,6 +126,10 @@ formEl.addEventListener("submit", (event) => {
     const status = document.querySelector("#status").value;
     const cover = document.querySelector("#cover").value.trim();
 
+    if (!isValidCoverUrl(cover)) {
+        alert("Cover must be an http:// or https:// URL.");
+        return;
+    }
     // Guard: don't add empty books
     if (!title || !author) {
         alert("Title and author are required.");
@@ -144,6 +148,8 @@ formEl.addEventListener("submit", (event) => {
 
     // Re-render and reset the form
     render();
+
+    if (!saved) alert("⚠️ Couldn't save - changes won't persist after refresh.");
     formEl.reset();
     document.querySelector("#title").focus(); // nice UX: ready for next entry
 
@@ -177,9 +183,11 @@ function deleteBook(id) {
     const index = books.findIndex((b) => b.id === id);
     if (index !== -1) books.splice(index, 1);
     
-    saveBooks();
+    const saved = saveBooks();
 
     render();
+
+    if (!saved) alert("⚠️ Couldn't save - changes won't persist after refresh.");
 }
 
 function editBook(id) {
@@ -197,9 +205,21 @@ function editBook(id) {
     book.title = newTitle.trim() || book.title;
     book.author = newAuthor.trim() || book.author;
 
-    saveBooks();
+    const saved = saveBooks();
 
     render();
+
+    if (!saved) alert("⚠️ Couldn't save - changes won't persist after refresh.");
+}
+
+function isValidCoverUrl(str) {
+    if (!str) return true;
+    try {
+        const url = new URL(str);
+        return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+        return false;
+    }
 }
 
 // --- 7. Search + filter listeners ---
