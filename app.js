@@ -69,11 +69,52 @@ if (Array.isArray(saved)) books = saved;
 
 let searchTerm = "";
 let statusFilter = "all";
+let editingId = null;
 
 // --- 2. Grab DOM elements once ---
 const bookListEl = document.querySelector("#book-list");
 
 // --- 3. RENDER: draw the screen from state ---
+function renderCard(book) {
+    return `
+        <article class="book-card" data-id="${book.id}">
+            <div class="book-cover">
+                ${book.cover ? `<img src="${escapeHtml(book.cover)}" alt="${escapeHtml(book.title)}" />` : "📕"}
+            </div>
+            <div class="book-info">
+                <h3>${escapeHtml(book.title)}</h3>
+                <p class="author">${escapeHtml(book.author)}</p>
+                <span class="badge badge--${escapeHtml(book.status)}">${escapeHtml(book.status)}</span>
+            </div>
+            <div class="book-actions">
+                <button class="btn-edit" data-action="edit">Edit</button>
+                <button class="btn-delete" data-action="delete">Delete</button>
+            </div>
+        </article>
+    `;
+}
+
+function renderEditForm(book) {
+    return `
+        <article class="book-card book-card--editing" data-id="${book.id}">
+            <form class="inline-edit" data-action="save">
+                <input name="title" value="${escapeHtml(book.title)}}" required />
+                <input name="author" value="${escapeHtml(book.author)}" required />
+                <select name="status">
+                    <option value="owned"    ${book.status === "owned"    ? "selected" : ""}>Owned</option>
+                    <option value="reading"  ${book.status === "reading"  ? "selected" : ""}>Reading</option>
+                    <option value="read"     ${book.status === "read"     ? "selected" : ""}>Read</option>
+                    <option value="wishlist" ${book.status === "wishlist" ? "selected" : ""}>Wishlist</option>
+                </select>
+                <div class="edit-actions">
+                    <button type="submit">Save</button>
+                    <button type="button" data-action="cancel">Cancel</button>
+                </div>
+            </form>
+        </article>
+    `;       
+}
+
 function render() {
     const filtered = books.filter((book) => {
         const matchesSearch = 
@@ -89,24 +130,7 @@ function render() {
         return;
     }
     bookListEl.innerHTML = filtered
-        .map(
-            (book) => `
-            <article class="book-card" data-id="${book.id}">
-                <div class="book-cover">
-                ${book.cover ? `<img src="${escapeHtml(book.cover)}" alt="${escapeHtml(book.title)}" />` : "📕"}
-                </div>
-                <div class="book-info">
-                    <h3>${escapeHtml(book.title)}</h3>
-                    <p class="author">${escapeHtml(book.author)}</p>
-                    <span class="badge badge--${escapeHtml(book.status)}">${escapeHtml(book.status)}</span>
-                </div>
-                <div class="book-actions">
-                    <button class="btn-edit" data-action="edit">Edit</button>
-                    <button class="btn-delete" data-action="delete">Delete</button>
-                </div>
-            </article>
-            `
-        )
+        .map(book => book.id === editingId ? renderEditForm(book) : renderCard(book))
         .join(""); // join the array of strings into one big string
 }
 
@@ -172,8 +196,42 @@ bookListEl.addEventListener("click", (event) => {
     if (action === "delete") {
         deleteBook(id);
     } else if (action === "edit") {
-        editBook(id);
+        editingId = id;
+        render();
+    } else if (action === "cancel") {
+        editingId = null;
+        render();
     }
+});
+
+bookListEl.addEventListener("submit", (event) => {
+    const form = event.target.closest("form[data-action='save']");
+    if (!form) return;
+
+    event.preventDefault();
+
+    const card = form.closest(".book-card");
+    const id = card.dataset.id;
+    const book = books.find(b => b.id === id);
+    if (!book) return;
+
+    const title  = form.querySelector("[name='title']").value.trim();
+    const author = form.querySelector("[name='author']").value.trim();
+    const status = form.querySelector("[name='status']").value;
+
+    if (!title || !author) {
+        alert("Title and author are required.");
+        return;
+    }
+
+    book.title = title;
+    book.author = author;
+    book.status = status;
+
+    editingId = null;
+    const saved = saveBooks();
+    render();
+    if (!saved) alert("⚠️ Couldn't save - changes won't persist after refresh.");
 });
 
 function deleteBook(id) {
@@ -183,28 +241,6 @@ function deleteBook(id) {
     const index = books.findIndex((b) => b.id === id);
     if (index !== -1) books.splice(index, 1);
     
-    const saved = saveBooks();
-
-    render();
-
-    if (!saved) alert("⚠️ Couldn't save - changes won't persist after refresh.");
-}
-
-function editBook(id) {
-    const book = books.find((b) => b.id === id);
-    if (!book) return;
-
-    // For now: simple prompt-based edit. We'll upgrade to a proper form later.
-    const newTitle = prompt("New title:", book.title);
-    if (!newTitle.trim()) return;
-    if (newTitle === null) return; // user cancelled
-    const newAuthor = prompt("New author:", book.author);
-    if (!newAuthor.trim()) return;
-    if (newAuthor === null) return;
-
-    book.title = newTitle.trim() || book.title;
-    book.author = newAuthor.trim() || book.author;
-
     const saved = saveBooks();
 
     render();

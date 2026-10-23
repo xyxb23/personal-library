@@ -122,6 +122,26 @@ body {
 .book-info h3 { margin: 0 0 0.2rem; font-size: 0.95rem; }
 .book-info .author { margin: 0 0 0.4rem; font-size: 0.85rem; color: #666; }
 
+.book-card--editing { display: block; }
+.inline-edit { display: flex; flex-direction: column; gap: 0.4rem; }
+.inline-edit input,
+.inline-edit select {
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+.edit-actions { display: flex; gap: 0.4rem; margin-top: 0.3rem; }
+.edit-actions button {
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+}
+.edit-actions button[type="submit"] { background: #2563eb; color: #fff; }
+.edit-actions button[data-action="cancel"] { background: #e5e7eb; }
+
 /* --- status badge --- */
 .badge {
     font-size: 0.7rem;
