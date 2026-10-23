@@ -264,10 +264,12 @@ const filterEl = document.querySelector("#filter");
 
 searchEl.addEventListener("input", (event) => {
     searchTerm = event.target.value.trim().toLowerCase();
+    editingId = null;
     render();
 });
 
 filterEl.addEventListener("change", (event) => {
     statusFilter = event.target.value;
+    editingId = null;
     render();
 });
