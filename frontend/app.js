@@ -105,7 +105,7 @@ function renderEditForm(book) {
     return `
         <article class="book-card book-card--editing" data-id="${book.id}">
             <form class="inline-edit" data-action="save">
-                <input name="title" value="${escapeHtml(book.title)}}" required />
+                <input name="title" value="${escapeHtml(book.title)}" required />
                 <input name="author" value="${escapeHtml(book.author)}" required />
                 <select name="status">
                     <option value="owned"    ${book.status === "owned"    ? "selected" : ""}>Owned</option>
@@ -216,7 +216,8 @@ bookListEl.addEventListener("submit", async (event) => {
     }
 
     const ok = await updateBookOnServer(id, { title, author, status });
-    if (!ok) { alert("Couldn't save changess."); return; }
+    if (!ok) { alert("Couldn't save changes."); return; }
+    
     editingId = null;
     render();
 });
