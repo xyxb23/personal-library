@@ -35,8 +35,8 @@ def create_book():
     
     conn = get_db()
     cur = conn.execute(
-        "INSERT INTO books (title, author, status, cover) VALUES (?, ?, ?, ?)",
-        (title, author, status, cover),
+        "INSERT INTO books (title, author, status, cover, user_id) VALUES (?, ?, ?, ?, ?)",
+        (title, author, status, cover, 1),
     )
     conn.commit()
     new_id = cur.lastrowid
