@@ -7,7 +7,7 @@ function escapeHtml(str) {
       .replaceAll("'", "&#39;");
   }
 
-const API ="http://localhost:5000/api/books";
+const API ="https://personal-library-jr8b.onrender.com/api/books";
 
 async function loadBooksFromServer() {
     try {
@@ -217,7 +217,7 @@ bookListEl.addEventListener("submit", async (event) => {
 
     const ok = await updateBookOnServer(id, { title, author, status });
     if (!ok) { alert("Couldn't save changes."); return; }
-    
+
     editingId = null;
     render();
 });
