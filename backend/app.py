@@ -1,9 +1,73 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from db import get_db
+from flask_jwt_extended import (
+    JWTManager, create_access_token, jwt_required, get_jwt_identity
+)
+from werkzeug.security import (generate_password_hash, check_password_hash)
 
 app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = "dev-secret-change-in-production"
 CORS(app)
+jwt = JWTManager(app)
+
+@app.post("/api/auth/register")
+def register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not username or not password:
+        return jsonify({"error": "username and password are required"}), 400
+    if len(password) < 6:
+        return jsonify({"error": "password must be at least 6 characters"}), 400
+    
+    conn = get_db()
+    existing = conn.execute(
+        "SELECT id FROM users WHERE username = ?", (username,)
+    ).fetchone()
+    if existing:
+        conn.close()
+        return jsonify({"error": "username already taken"}), 409
+    
+    password_hash = generate_password_hash(password)
+    cur = conn.execute(
+        "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+        (username, password_hash),
+    )
+    conn.commit()
+    user_id = cur.lastrowid
+    conn.close()
+
+    # Log the in immediately by returning a token
+    token = create_access_token(identity=str(user_id))
+    return jsonify({"access_token": token, "user_id": user_id, "username": username}), 201
+
+@app.post("/api/auth/login")
+def login():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not username or not password:
+        return jsonify({"error": "username and password are required"}), 400
+
+    conn = get_db()
+    row = conn.execute(
+        "SELECT id, username, password_hash FROM users WHERE username = ?",
+        (username,),
+    ).fetchone()
+    conn.close()
+
+    if row is None or not check_password_hash(row["password_hash"], password):
+        return jsonify({"error": "invalid username or password"}), 401
+    
+    token = create_access_token(identity=str(row["id"]))
+    return jsonify({
+        "access_token": token,
+        "user_id": row["id"],
+        "username": row["username"],
+    }), 200
 
 @app.get("/api/books")
 def get_books():
