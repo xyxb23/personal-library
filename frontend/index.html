@@ -9,7 +9,26 @@
 <body>
     <header class="site-header">
         <h1>📚 My Library</h1>
+        <button id="logout-btn" class="logout-btn" hidden>Log out</button>
     </header>
+
+    <section id="auth-screen" class="auth-screen">
+        <h2>Welcome to My Library</h2>
+        <form id="auth-form">
+            <label for="auth-username">Username</label>
+            <input id="auth-username" type="text" required />
+
+            <label for="auth-password">Password</label>
+            <input id="auth-password" type="password" required />
+
+            <button type="submit" id="auth-submit">Log in</button>
+            <p class="auth-toggle">
+                <span id="auth-mode-text">No account?</span>
+                <button type="button" id="auth-toggle-btn">Register</button>
+            </p>
+        </form>
+        <p id="auth-error" class="auth-error"></p>
+    </section>
 
     <main class="layout">
         <!-- SIDEBAR: add-book form -->

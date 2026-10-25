@@ -8,10 +8,109 @@ function escapeHtml(str) {
   }
 
 const API ="http://localhost:5000/api/books";
+const AUTH_API = "http://localhost:5000/api/auth";
+
+function getToken() {
+    return localStorage.getItem("access_token");
+}
+
+function setToken(token) {
+    localStorage.setItem("access_token", token);
+}
+
+function clearToken() {
+    localStorage.removeItem("access_token");
+}
+
+function authHeaders() {
+    const token = getToken();
+    return token
+        ? { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
+        : { "Content-Type": "application/json" };
+}
+
+let authMode = "login";   // "login" | "register"
+
+const authScreen = document.querySelector("#auth-screen");
+const authForm = document.querySelector("#auth-form");
+const authError = document.querySelector("#auth-error");
+const authToggleBtn = document.querySelector("#auth-toggle-btn");
+const authModeText = document.querySelector("#auth-mode-text");
+const authSubmit = document.querySelector("#auth-submit");
+const logoutBtn = document.querySelector("#logout-btn");
+
+function showAuthScreen() {
+    authScreen.hidden = false;
+    document.querySelector(".layout").hidden = true;
+    logoutBtn.hidden = true;
+}
+
+function showApp() {
+    authScreen.hidden = true;
+    document.querySelector(".layout").hidden = false;
+    logoutBtn.hidden = false;
+}
+
+authToggleBtn.addEventListener("click", () => {
+    authMode = authMode === "login" ? "register" : "login";
+    authSubmit.textContent = authMode === "login" ? "Log in" : "Register";
+    authToggleBtn.textContent = authMode === "login" ? "Register" : "Log in";
+    authModeText.textContent = authMode === "login" ? "No account?" : "Have an account?";
+    authError.textContent = "";
+});
+
+authForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    authError.textContent = "";
+
+    const username = document.querySelector("#auth-username").value.trim();
+    const password = document.querySelector("#auth-password").value;
+
+    if (!username || !password) {
+        authError.textContent = "Username and password are required.";
+        return;
+    }
+
+    const endpoint = authMode === "login" ? "login" : "register";
+    try {
+        const res = await fetch(`${AUTH_API}/${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            authError.textContent = data.error || "Something went wrong.";
+            return;
+        }
+        if (res.status === 401) {
+            clearToken();
+            showAuthScreen();
+            throw new Error("Session expired");
+        }
+        setToken(data.access_token);
+        authForm.reset();
+        showApp();
+        loadBooksFromServer();
+    } catch (err) {
+        console.error("Auth failed:", err);
+        authError.textContent = "Couldn't reach the server. Is Flask running?";
+    }
+});
+
+logoutBtn.addEventListener("click", () => {
+    clearToken();
+    showAuthScreen();
+})
 
 async function loadBooksFromServer() {
     try {
-        const res = await fetch(API);
+        const res = await fetch(API, { headers: authHeaders() });
+        if (res.status === 401) {
+            clearToken();
+            showAuthScreen();
+            return;
+        }
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
         books = await res.json();
         render();
@@ -25,10 +124,15 @@ async function addBookToServer(data) {
     try {
         const res = await fetch(API, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: authHeaders(),
             body: JSON.stringify(data),
         });
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        if (res.status === 401) {
+            clearToken();
+            showAuthScreen();
+            throw new Error("Session expired");
+        }
         const created = await res.json();
         books.push(created);
         render();
@@ -41,8 +145,13 @@ async function addBookToServer(data) {
 
 async function deleteBookFromServer(id) {
     try {
-        const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API}/${id}`, { method: "DELETE", headers: authHeaders(), });
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        if (res.status === 401) {
+            clearToken();
+            showAuthScreen();
+            throw new Error("Session expired");
+        }
         books = books.filter(b => b.id !== id);
         render();
         return true;
@@ -56,10 +165,15 @@ async function updateBookOnServer(id, data) {
     try {
         const res = await fetch(`${API}/${id}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: authHeaders(),
             body: JSON.stringify(data),
         });
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        if (res.status === 401) {
+            clearToken();
+            showAuthScreen();
+            throw new Error("Session expired");
+        }
         const updated = await res.json();
         const idx = books.findIndex(b => b.id === id);
         if (idx !== -1) books[idx] = updated;
@@ -140,10 +254,6 @@ function render() {
         .map(book => book.id === editingId ? renderEditForm(book) : renderCard(book))
         .join(""); // join the array of strings into one big string
 }
-
-// --- 4. Go ---
-render();               // initial empty paint
-loadBooksFromServer();  // then fetch and re-render
 
 // --- Grab the form once ===
 const formEl = document.querySelector("#book-form");
@@ -247,3 +357,12 @@ filterEl.addEventListener("change", (event) => {
     editingId = null;
     render();
 });
+
+// --- 4. Go ---
+if (getToken()) {
+    showApp();
+    loadBooksFromServer();
+} else {
+    showAuthScreen();
+}
+render();
