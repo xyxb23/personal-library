@@ -195,6 +195,15 @@ body {
   padding: 0.35rem 0.8rem; border-radius: 6px; font: inherit; cursor: pointer;
 }
 
+.demo-banner {
+  background: #fef3f7;
+  color: #92400e;
+  padding: 0.6rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+.demo-banner a { color: #92400e; font-weight: 600; }
+
 /* --- responsive: stack on small screens --- */
 @media (max-width: 700px) {
   .layout { grid-template-columns: 1fr; }

@@ -1,3 +1,7 @@
+if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+    document.querySelector("#demo-banner").hidden = false;
+}
+
 function escapeHtml(str) {
     return String(str)
       .replaceAll("&", "&amp;")
