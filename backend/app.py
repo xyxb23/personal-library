@@ -70,15 +70,21 @@ def login():
     }), 200
 
 @app.get("/api/books")
+@jwt_required()
 def get_books():
+    user_id = int(get_jwt_identity())   # token stores it as a string; convert back
     conn = get_db()
-    rows = conn.execute("SELECT * FROM books ORDER BY id").fetchall()
+    rows = conn.execute(
+        "SELECT * FROM books WHERE user_id = ? ORDER BY id",
+        (user_id,),
+    ).fetchall()
     conn.close()
-    books = [dict(row) for row in rows]
-    return jsonify(books)
+    return jsonify([dict(row) for row in rows])
 
 @app.post("/api/books")
+@jwt_required()
 def create_book():
+    user_id = int(get_jwt_identity())
     data = request.get_json(silent=True) or {}
 
     title  = (data.get("title")  or "").strip()
@@ -100,21 +106,26 @@ def create_book():
     conn = get_db()
     cur = conn.execute(
         "INSERT INTO books (title, author, status, cover, user_id) VALUES (?, ?, ?, ?, ?)",
-        (title, author, status, cover, 1),
+        (title, author, status, cover, user_id),
     )
     conn.commit()
     new_id = cur.lastrowid
-    row = conn.execute("SELECT * FROM books WHERE id = ?", (new_id,)).fetchone()
+    row = conn.execute("SELECT * FROM books WHERE id = ? AND user_id = ?", (new_id, user_id)).fetchone()
     conn.close()
 
     return jsonify(dict(row)), 201
 
 @app.patch("/api/books/<int:book_id>")
+@jwt_required()
 def update_book(book_id):
+    user_id = int(get_jwt_identity())
     data = request.get_json(silent=True) or {}
 
     conn = get_db()
-    row = conn.execute("SELECT * FROM books WHERE id = ?", (book_id,)).fetchone()
+    row = conn.execute(
+        "SELECT * FROM books WHERE id = ? AND user_id = ?",
+        (book_id, user_id),
+    ).fetchone()
     if row is None:
         conn.close()
         return jsonify({"error": "book not found"}), 404
@@ -144,8 +155,8 @@ def update_book(book_id):
         return jsonify({"error": "cover must be an http(s) URL"}), 400
     
     conn.execute(
-        "UPDATE books SET title = ?, author = ?, status = ?, cover = ? WHERE id = ?",
-        (title, author, status, cover, book_id),
+        "UPDATE books SET title = ?, author = ?, status = ?, cover = ? WHERE id = ? AND user_id = ?",
+        (title, author, status, cover, book_id, user_id),
     )
     conn.commit()
     row = conn.execute("SELECT * FROM books WHERE id = ?", (book_id,)).fetchone()
@@ -154,14 +165,17 @@ def update_book(book_id):
     return jsonify(dict(row)), 200
 
 @app.delete("/api/books/<int:book_id>")
+@jwt_required()
 def delete_book(book_id):
+    user_id = int(get_jwt_identity())
+
     conn = get_db()
-    row = conn.execute("SELECT id FROM books WHERE id = ?", (book_id,)).fetchone()
+    row = conn.execute("SELECT id FROM books WHERE id = ? AND user_id = ?", (book_id, user_id),).fetchone()
     if row is None:
         conn.close()
         return jsonify({"error": "book not found"}), 404
     
-    conn.execute("DELETE FROM books WHERE id = ?", (book_id,))
+    conn.execute("DELETE FROM books WHERE id = ? AND user_id = ?", (book_id, user_id))
     conn.commit()
     conn.close()
 
