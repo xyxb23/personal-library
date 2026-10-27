@@ -3,7 +3,7 @@
 A full-stack personal library app — track books you own, are reading, 
 have read, or want to read. Multi-user, with JWT authentication.
 
-**Live demo (frontend only):** https://personal-library-r.netlify.app
+**Live demo (frontend only):** https://personal-libr.netlify.app
 > The demo shows the UI but needs the backend running locally for full 
 > functionality. See "Run locally" below.
 
